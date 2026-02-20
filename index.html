@@ -2,83 +2,47 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Calculadora de Impressão 3D</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora 3D</title>
+    <link rel="manifest" href="manifest.json">
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #1e1e1e; padding: 25px; border-radius: 15px; width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
+        body { font-family: sans-serif; background: #121212; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e1e; padding: 25px; border-radius: 15px; width: 90%; max-width: 350px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid #333; }
         h2 { color: #00ffa2; text-align: center; margin-top: 0; }
-        .campo { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; color: #aaa; font-size: 14px; }
-        input { width: 100%; padding: 12px; border: 1px solid #444; border-radius: 8px; background: #252525; color: white; box-sizing: border-box; font-size: 16px; }
-        input:focus { border-color: #00ffa2; outline: none; }
-        button { width: 100%; padding: 15px; background: #00ffa2; border: none; border-radius: 8px; color: #000; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s; margin-top: 10px; }
-        button:hover { background: #00d688; transform: translateY(-2px); }
-        .res-box { margin-top: 20px; padding: 15px; background: #252525; border-radius: 8px; text-align: center; display: none; border-left: 4px solid #00ffa2; }
-        #valorFinal { font-size: 28px; color: #00ffa2; font-weight: bold; display: block; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #444; border-radius: 8px; background: #252525; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; background: #00ffa2; border: none; border-radius: 8px; color: #000; font-weight: bold; cursor: pointer; }
+        #res { margin-top: 20px; padding: 15px; background: #252525; border-radius: 8px; text-align: center; display: none; border-left: 4px solid #00ffa2; }
+        #valor { font-size: 28px; color: #00ffa2; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2>Custo do Filamento</h2>
-    
-    <div class="campo">
-        <label>Preço do Rolo (R$)</label>
-        <input type="text" id="preco" placeholder="Ex: 130,00" oninput="validar(this)">
-    </div>
-
-    <div class="campo">
-        <label>Peso do Rolo (gramas)</label>
-        <input type="number" id="pesoRolo" value="1000">
-    </div>
-
-    <div class="campo">
-        <label>Gramas que serão usadas (g)</label>
-        <input type="text" id="gramas" placeholder="Ex: 50,5" oninput="validar(this)">
-    </div>
-
-    <button type="button" onclick="calcular()">Calcular Custo</button>
-
-    <div id="resultadoBox" class="res-box">
-        <small style="color: #888;">Custo Estimado da Peça:</small>
-        <span id="valorFinal">R$ 0,00</span>
-    </div>
+    <h2>Custo 3D</h2>
+    <label>Preço do Rolo (R$)</label>
+    <input type="number" id="preco" placeholder="Ex: 120">
+    <label>Gramas Usadas (g)</label>
+    <input type="number" id="gramas" placeholder="Ex: 50">
+    <button onclick="calc()">Calcular</button>
+    <div id="res"><small>Custo:</small><br><span id="valor">R$ 0,00</span></div>
 </div>
 
 <script>
-    // Função para permitir vírgula e ponto
-    function validar(input) {
-        input.value = input.value.replace(/[^0-9,.]/g, '');
+    function calc() {
+        const p = parseFloat(document.getElementById('preco').value);
+        const g = parseFloat(document.getElementById('gramas').value);
+        if (p && g) {
+            // Cálculo: (Preço / 1000g) * gramas usadas
+            const total = (p / 1000) * g;
+            document.getElementById('valor').innerText = "R$ " + total.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+            document.getElementById('res').style.display = 'block';
+        }
     }
 
-    function calcular() {
-        // Pegamos os valores e trocamos a vírgula por ponto para o PC entender
-        let preco = document.getElementById('preco').value.replace(',', '.');
-        let peso = document.getElementById('pesoRolo').value;
-        let gramas = document.getElementById('gramas').value.replace(',', '.');
-
-        // Converte para números reais
-        preco = parseFloat(preco);
-        peso = parseFloat(peso);
-        gramas = parseFloat(gramas);
-
-        // Verifica se os campos estão preenchidos corretamente
-        if (isNaN(preco) || isNaN(peso) || isNaN(gramas) || peso <= 0) {
-            alert("Por favor, preencha todos os campos com números válidos!");
-            return;
-        }
-
-        // CÁLCULO: (Preço / Peso do Rolo) * Gramas usadas
-        const resultado = (preco / peso) * gramas;
-
-        // Mostra o resultado na tela
-        const box = document.getElementById('resultadoBox');
-        const span = document.getElementById('valorFinal');
-        
-        span.innerText = "R$ " + resultado.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        box.style.display = 'block';
+    // REGISTRO DO SERVICE WORKER (Para funcionar offline)
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js');
     }
 </script>
-
 </body>
 </html>
